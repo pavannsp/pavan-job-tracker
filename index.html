@@ -1,661 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Sai Pavan — H1B Job Tracker</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #ffffff;
-    --bg2: #f7f7f5;
-    --bg3: #f0efeb;
-    --text: #1a1a18;
-    --text2: #5a5a56;
-    --text3: #9a9a94;
-    --border: rgba(0,0,0,0.1);
-    --border2: rgba(0,0,0,0.18);
-    --blue: #185FA5;
-    --blue-bg: #E6F1FB;
-    --blue-text: #0C447C;
-    --green: #1D9E75;
-    --green-bg: #EAF3DE;
-    --green-text: #3B6D11;
-    --amber-bg: #FAEEDA;
-    --amber-text: #854F0B;
-    --red-bg: #FCEBEB;
-    --red-text: #A32D2D;
-    --gray-bg: #F1EFE8;
-    --gray-text: #5F5E5A;
-    --radius: 8px;
-    --radius-lg: 12px;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a;
-      --bg2: #252522;
-      --bg3: #2e2e2a;
-      --text: #f0f0ec;
-      --text2: #a8a8a0;
-      --text3: #686860;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.18);
-      --blue-bg: #0c2a45;
-      --blue-text: #85B7EB;
-      --green-bg: #0d2e1f;
-      --green-text: #5DCAA5;
-      --amber-bg: #2e1f06;
-      --amber-text: #FAC775;
-      --red-bg: #2e0d0d;
-      --red-text: #F09595;
-      --gray-bg: #2a2a26;
-      --gray-text: #B4B2A9;
-    }
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg3);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.5;
-  }
-
-  .topbar {
-    background: var(--bg);
-    border-bottom: 0.5px solid var(--border);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .topbar-brand { display: flex; align-items: center; gap: 10px; }
-  .topbar-logo { width: 28px; height: 28px; border-radius: 6px; background: var(--blue); display: flex; align-items: center; justify-content: center; }
-  .topbar-logo svg { width: 16px; height: 16px; fill: white; }
-  .topbar-name { font-size: 15px; font-weight: 500; color: var(--text); }
-  .topbar-sub { font-size: 12px; color: var(--text2); }
-
-  .topbar-right { display: flex; align-items: center; gap: 8px; }
-  .badge { font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 500; white-space: nowrap; }
-  .badge-google { background: var(--blue-bg); color: var(--blue-text); }
-  .badge-h1b { background: var(--green-bg); color: var(--green-text); }
-  .badge-interview { background: var(--amber-bg); color: var(--amber-text); }
-  .badge-applied { background: var(--blue-bg); color: var(--blue-text); }
-  .badge-saved { background: var(--gray-bg); color: var(--gray-text); }
-  .badge-rejected { background: var(--red-bg); color: var(--red-text); }
-  .badge-offer { background: var(--green-bg); color: var(--green-text); }
-  .badge-skill { background: var(--gray-bg); color: var(--gray-text); font-size: 11px; padding: 2px 8px; border-radius: 4px; }
-
-  .container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
-
-  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 24px; }
-  .metric { background: var(--bg); border-radius: var(--radius); padding: 14px 16px; border: 0.5px solid var(--border); }
-  .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
-  .metric-value { font-size: 26px; font-weight: 500; color: var(--text); line-height: 1; }
-  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
-
-  .ai-panel {
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 16px 18px;
-    margin-bottom: 20px;
-  }
-  .ai-status { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); }
-  .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1.5s ease-in-out infinite; flex-shrink: 0; }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-  .ai-result { margin-top: 12px; font-size: 13px; color: var(--text); line-height: 1.6; border-top: 0.5px solid var(--border); padding-top: 12px; display: none; }
-
-  .search-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .search-row input, .search-row select {
-    height: 38px; padding: 0 12px; font-size: 13px;
-    border: 0.5px solid var(--border2); border-radius: var(--radius);
-    background: var(--bg); color: var(--text); outline: none;
-  }
-  .search-row input { flex: 1; min-width: 200px; }
-  .search-row input:focus, .search-row select:focus { border-color: var(--blue); }
-  .btn {
-    height: 38px; padding: 0 16px; font-size: 13px;
-    border: 0.5px solid var(--border2); border-radius: var(--radius);
-    background: var(--bg); color: var(--text); cursor: pointer;
-    white-space: nowrap; transition: background 0.12s;
-  }
-  .btn:hover { background: var(--bg2); }
-  .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
-  .btn-primary:hover { background: var(--blue-text); }
-
-  .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 0.5px solid var(--border); padding-bottom: 0; }
-  .tab {
-    font-size: 13px; padding: 8px 16px; cursor: pointer;
-    border: none; background: none; color: var(--text2);
-    border-bottom: 2px solid transparent; margin-bottom: -1px;
-    transition: color 0.12s;
-  }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
-
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .section-title { font-size: 14px; font-weight: 500; color: var(--text); }
-  .section-count { font-size: 12px; color: var(--text2); }
-
-  .job-list { display: flex; flex-direction: column; gap: 8px; }
-  .job-card {
-    background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg); padding: 16px 18px; cursor: default;
-    transition: border-color 0.12s;
-  }
-  .job-card:hover { border-color: var(--border2); }
-  .job-card.google { border-left: 3px solid var(--blue); }
-  .job-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .job-title { font-size: 15px; font-weight: 500; color: var(--text); }
-  .job-company { font-size: 13px; color: var(--text2); margin-top: 2px; }
-  .job-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; align-items: center; }
-  .match-wrap { margin-top: 8px; }
-  .match-bar-bg { height: 3px; background: var(--border); border-radius: 2px; }
-  .match-bar-fill { height: 3px; border-radius: 2px; background: var(--blue); transition: width 0.4s ease; }
-  .match-label { font-size: 12px; color: var(--text2); margin-top: 5px; }
-  .job-highlight { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .job-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
-  .btn-xs { height: 30px; padding: 0 10px; font-size: 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); cursor: pointer; }
-  .btn-xs:hover { background: var(--bg2); }
-  .btn-xs-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
-  .btn-xs-primary:hover { background: var(--blue-text); }
-  .btn-xs-green { background: var(--green-bg); color: var(--green-text); border-color: transparent; }
-
-  .pipeline-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 20px; }
-  .pipeline-col { background: var(--bg2); border-radius: var(--radius-lg); padding: 12px; min-height: 100px; }
-  .pipeline-col-title { font-size: 11px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-  .pipeline-item { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 8px 10px; margin-bottom: 6px; }
-  .pipeline-item-title { font-size: 12px; font-weight: 500; color: var(--text); }
-  .pipeline-item-co { font-size: 11px; color: var(--text2); }
-  .pipeline-item-date { font-size: 10px; color: var(--text3); margin-top: 3px; }
-  .pipeline-item-actions { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
-  .btn-xxs { height: 22px; padding: 0 7px; font-size: 10px; border: 0.5px solid var(--border); border-radius: 4px; background: var(--bg2); color: var(--text2); cursor: pointer; }
-  .btn-xxs:hover { color: var(--text); background: var(--bg3); }
-
-  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text2); font-size: 13px; }
-  .empty-state h3 { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
-
-  .loading { display: inline-block; }
-  .loading::after { content: '.'; animation: dots 1.2s steps(3, end) infinite; }
-  @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
-
-  .hidden { display: none !important; }
-
-  footer { text-align: center; padding: 2rem; font-size: 12px; color: var(--text3); border-top: 0.5px solid var(--border); margin-top: 2rem; }
-
-  @media (max-width: 600px) {
-    .topbar { padding: 0 14px; }
-    .container { padding: 16px 12px; }
-    .topbar-sub, .badge { display: none; }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#fff;--bg2:#f7f7f5;--bg3:#f0efeb;--text:#1a1a18;--text2:#5a5a56;--text3:#9a9a94;--border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);--blue:#185FA5;--blue-bg:#E6F1FB;--blue-text:#0C447C;--green:#1D9E75;--green-bg:#EAF3DE;--green-text:#3B6D11;--amber-bg:#FAEEDA;--amber-text:#854F0B;--red-bg:#FCEBEB;--red-text:#A32D2D;--gray-bg:#F1EFE8;--gray-text:#5F5E5A;--r:8px;--rl:12px}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1a;--bg2:#252522;--bg3:#2e2e2a;--text:#f0f0ec;--text2:#a8a8a0;--text3:#686860;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);--blue-bg:#0c2a45;--blue-text:#85B7EB;--green-bg:#0d2e1f;--green-text:#5DCAA5;--amber-bg:#2e1f06;--amber-text:#FAC775;--red-bg:#2e0d0d;--red-text:#F09595;--gray-bg:#2a2a26;--gray-text:#B4B2A9}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;font-size:15px}
+.topbar{background:var(--bg);border-bottom:0.5px solid var(--border);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:30px;height:30px;border-radius:7px;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px}
+.brand-name{font-size:15px;font-weight:500}
+.brand-sub{font-size:12px;color:var(--text2)}
+.topbar-right{display:flex;gap:7px;align-items:center}
+.badge{font-size:11px;padding:3px 9px;border-radius:999px;font-weight:500;white-space:nowrap}
+.b-google{background:var(--blue-bg);color:var(--blue-text)}
+.b-h1b{background:var(--green-bg);color:var(--green-text)}
+.b-skill{background:var(--gray-bg);color:var(--gray-text);font-size:10px;padding:2px 7px;border-radius:4px}
+.b-applied{background:var(--blue-bg);color:var(--blue-text)}
+.b-interview{background:var(--amber-bg);color:var(--amber-text)}
+.b-offer{background:var(--green-bg);color:var(--green-text)}
+.b-rejected{background:var(--red-bg);color:var(--red-text)}
+.b-live{background:var(--green-bg);color:var(--green-text);font-size:10px;padding:2px 6px;border-radius:4px}
+.b-seed{background:var(--gray-bg);color:var(--gray-text);font-size:10px;padding:2px 6px;border-radius:4px}
+.wrap{max-width:1060px;margin:0 auto;padding:22px 18px}
+.status-bar{font-size:12px;color:var(--text3);margin-bottom:16px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:10px 14px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:9px;margin-bottom:18px}
+.metric{background:var(--bg);border-radius:var(--r);padding:12px 14px;border:0.5px solid var(--border)}
+.metric-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+.metric-value{font-size:25px;font-weight:500;line-height:1}
+.metric-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.filter-row{display:flex;gap:8px;margin-bottom:13px;flex-wrap:wrap;align-items:center}
+.filter-row input,.filter-row select{height:34px;padding:0 11px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none}
+.filter-row input{flex:1;min-width:150px}
+.btn{height:34px;padding:0 14px;font-size:12px;border:0.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--bg2)}
+.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-blue:hover{opacity:.9}
+.btn-sm{height:30px;padding:0 11px;font-size:12px}
+.tabs{display:flex;margin-bottom:15px;border-bottom:0.5px solid var(--border)}
+.tab{font-size:13px;padding:8px 15px;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.sec-title{font-size:14px;font-weight:500}
+.sec-count{font-size:12px;color:var(--text2)}
+.jobs{display:flex;flex-direction:column;gap:8px}
+.jcard{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:14px 16px;transition:border-color .1s}
+.jcard:hover{border-color:var(--border2)}
+.jcard.google{border-left:3px solid var(--blue)}
+.jcard-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.jtitle{font-size:15px;font-weight:500}
+.jco{font-size:13px;color:var(--text2);margin-top:2px}
+.jmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;align-items:center}
+.jright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.jsalary{font-size:11px;color:var(--text2)}
+.match-bg{height:3px;background:var(--border);border-radius:2px;margin-top:8px}
+.match-fill{height:3px;border-radius:2px;background:var(--blue)}
+.match-label{font-size:12px;color:var(--text2);margin-top:4px}
+.jhighlight{color:var(--text3)}
+.jactions{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.bxs{height:27px;padding:0 9px;font-size:11px;border:0.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);cursor:pointer}
+.bxs:hover{background:var(--bg2)}
+.bxs-blue{background:var(--blue);color:#fff;border-color:var(--blue)}
+.bxs-green{background:var(--green-bg);color:var(--green-text);border-color:transparent}
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:18px}
+.bcol{background:var(--bg2);border-radius:var(--rl);padding:10px 11px;min-height:80px}
+.bcol-title{font-size:10px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.bitem{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:7px 9px;margin-bottom:5px}
+.bitem-title{font-size:12px;font-weight:500}
+.bitem-co{font-size:11px;color:var(--text2)}
+.bitem-date{font-size:10px;color:var(--text3);margin-top:2px}
+.bitem-actions{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.bxxs{height:19px;padding:0 6px;font-size:10px;border:0.5px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text2);cursor:pointer}
+.bxxs:hover{color:var(--text)}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--text2);font-size:13px}
+.empty h3{font-size:15px;font-weight:500;color:var(--text);margin-bottom:6px}
+.hidden{display:none!important}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--bg);border-radius:var(--rl);padding:22px;width:400px;max-width:100%}
+.modal h3{font-size:15px;font-weight:500;margin-bottom:14px}
+.modal input{width:100%;height:33px;padding:0 10px;border:0.5px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);font-size:13px;margin-bottom:9px}
+footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--text3);border-top:0.5px solid var(--border);margin-top:2rem}
+@media(max-width:600px){.topbar{padding:0 12px}.wrap{padding:14px 10px}.brand-sub,.topbar-right .badge{display:none}}
 </style>
 </head>
 <body>
-
 <div class="topbar">
-  <div class="topbar-brand">
-    <div class="topbar-logo">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    </div>
+  <div class="brand">
+    <div class="logo">&#127919;</div>
     <div>
-      <div class="topbar-name">Sai Pavan's Job Tracker</div>
-      <div class="topbar-sub">AI &amp; ML Data Engineer · H1B Required</div>
+      <div class="brand-name">Sai Pavan's H1B Job Tracker</div>
+      <div class="brand-sub">AI &amp; ML Data Engineer &middot; Targeting Google</div>
     </div>
   </div>
   <div class="topbar-right">
-    <span class="badge badge-google">Google Priority</span>
-    <span class="badge badge-h1b">H1B Tracked</span>
+    <span class="badge b-google">Google Priority</span>
+    <span class="badge b-h1b">H1B &#10003;</span>
   </div>
 </div>
-
-<div class="container">
-
+<div class="wrap">
+  <div class="status-bar">
+    <span class="dot"></span>
+    <span><strong>37 jobs loaded</strong> &mdash; 6 Google priority &mdash; Scraped from LinkedIn + curated &mdash; Last updated: April 28, 2026</span>
+    <button class="btn btn-sm" style="margin-left:auto" onclick="showModal()">+ Add Job</button>
+  </div>
   <div class="metrics">
-    <div class="metric">
-      <div class="metric-label">Jobs Found</div>
-      <div class="metric-value" id="m-found">0</div>
-      <div class="metric-sub">this session</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Applied</div>
-      <div class="metric-value" id="m-applied">0</div>
-      <div class="metric-sub">tracked</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Interviews</div>
-      <div class="metric-value" id="m-interviews">0</div>
-      <div class="metric-sub">scheduled</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Google Roles</div>
-      <div class="metric-value" id="m-google">0</div>
-      <div class="metric-sub">active</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Avg Match</div>
-      <div class="metric-value" id="m-match">—</div>
-      <div class="metric-sub">profile fit</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Offers</div>
-      <div class="metric-value" id="m-offers">0</div>
-      <div class="metric-sub">in hand</div>
-    </div>
+    <div class="metric"><div class="metric-label">Total Jobs</div><div class="metric-value" id="m-total">37</div><div class="metric-sub">loaded</div></div>
+    <div class="metric"><div class="metric-label">Google Roles</div><div class="metric-value" id="m-google">6</div><div class="metric-sub">priority</div></div>
+    <div class="metric"><div class="metric-label">Applied</div><div class="metric-value" id="m-applied">0</div><div class="metric-sub">tracked</div></div>
+    <div class="metric"><div class="metric-label">Interviews</div><div class="metric-value" id="m-interviews">0</div><div class="metric-sub">scheduled</div></div>
+    <div class="metric"><div class="metric-label">Offers</div><div class="metric-value" id="m-offers">0</div><div class="metric-sub">in hand</div></div>
+    <div class="metric"><div class="metric-label">Avg Match</div><div class="metric-value" id="m-match">—</div><div class="metric-sub">profile fit</div></div>
   </div>
-
-  <div class="ai-panel">
-    <div class="ai-status">
-      <div class="pulse"></div>
-      <span id="ai-status-text">Enter your Anthropic API key below, then search for H1B-sponsoring roles matched to your profile</span>
-    </div>
-    <div class="ai-result" id="ai-result"></div>
-  </div>
-
-  <div class="search-row">
-    <input type="password" id="api-key-input" placeholder="Anthropic API key (sk-ant-...)" style="min-width:220px;max-width:280px;" />
-    <input type="text" id="keyword-input" placeholder="Role keyword (e.g. ML Engineer, Vertex AI...)" value="ML Engineer" />
-    <select id="company-filter">
-      <option value="all">All H1B companies</option>
+  <div class="filter-row">
+    <input type="text" id="search-input" placeholder="Search title, company, skill..." oninput="filterJobs()"/>
+    <select id="source-f" onchange="filterJobs()">
+      <option value="all">All sources</option>
+      <option value="live">Live scraped</option>
+      <option value="seed">Curated</option>
       <option value="google">Google only</option>
-      <option value="faang">FAANG + Top Tier</option>
-      <option value="cloud">Cloud / AI Focused</option>
     </select>
-    <button class="btn btn-primary" onclick="searchJobs()">Search Jobs →</button>
+    <select id="status-f" onchange="filterJobs()">
+      <option value="all">All statuses</option>
+      <option value="open">Not applied yet</option>
+      <option value="applied">Applied</option>
+      <option value="interview">Interview</option>
+    </select>
   </div>
-
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('jobs', this)">Job Leads</button>
-    <button class="tab" onclick="switchTab('pipeline', this)">My Pipeline</button>
-    <button class="tab" onclick="switchTab('saved', this)">Saved</button>
+    <button class="tab active" onclick="switchTab('jobs',this)">Job Leads <span id="tab-jc" style="font-size:11px;color:var(--text3)">(37)</span></button>
+    <button class="tab" onclick="switchTab('pipeline',this)">My Pipeline <span id="tab-pc" style="font-size:11px;color:var(--text3)">(0)</span></button>
+    <button class="tab" onclick="switchTab('saved',this)">Saved <span id="tab-sc" style="font-size:11px;color:var(--text3)">(0)</span></button>
   </div>
-
   <div id="tab-jobs">
-    <div class="section-header">
-      <span class="section-title">H1B Job Leads</span>
-      <span class="section-count" id="jobs-count">0 roles</span>
-    </div>
-    <div id="job-list" class="job-list">
-      <div class="empty-state">
-        <h3>Find your next role</h3>
-        <p>Add your Anthropic API key and click Search Jobs to discover H1B-sponsoring positions matched to your resume</p>
-      </div>
-    </div>
+    <div class="sec-head"><span class="sec-title">H1B Job Leads</span><span class="sec-count" id="jobs-count">37 roles</span></div>
+    <div id="job-list" class="jobs"></div>
   </div>
-
   <div id="tab-pipeline" class="hidden">
-    <div class="section-header">
-      <span class="section-title">Application pipeline</span>
-      <span class="section-count" id="pipeline-count">0 tracked</span>
+    <div class="sec-head"><span class="sec-title">Application pipeline</span><span class="sec-count" id="pipeline-count">0 tracked</span></div>
+    <div class="board">
+      <div class="bcol"><div class="bcol-title">Saved</div><div id="col-saved"></div></div>
+      <div class="bcol"><div class="bcol-title">Applied</div><div id="col-applied"></div></div>
+      <div class="bcol"><div class="bcol-title">Interview</div><div id="col-interview"></div></div>
+      <div class="bcol"><div class="bcol-title">Offer</div><div id="col-offer"></div></div>
+      <div class="bcol"><div class="bcol-title">Rejected</div><div id="col-rejected"></div></div>
     </div>
-    <div class="pipeline-board">
-      <div class="pipeline-col">
-        <div class="pipeline-col-title">Saved</div>
-        <div id="col-saved"></div>
-      </div>
-      <div class="pipeline-col">
-        <div class="pipeline-col-title">Applied</div>
-        <div id="col-applied"></div>
-      </div>
-      <div class="pipeline-col">
-        <div class="pipeline-col-title">Interview</div>
-        <div id="col-interview"></div>
-      </div>
-      <div class="pipeline-col">
-        <div class="pipeline-col-title">Offer</div>
-        <div id="col-offer"></div>
-      </div>
-      <div class="pipeline-col">
-        <div class="pipeline-col-title">Rejected</div>
-        <div id="col-rejected"></div>
-      </div>
-    </div>
-    <div id="pipeline-empty" class="empty-state">
-      <h3>No applications yet</h3>
-      <p>Search for jobs and click "Track" or "Applied" to add them here</p>
-    </div>
+    <div id="pipeline-empty" class="empty"><h3>No applications tracked yet</h3><p>Click "Applied" or "Got Interview" on any job lead</p></div>
   </div>
-
   <div id="tab-saved" class="hidden">
-    <div class="section-header">
-      <span class="section-title">Saved jobs</span>
-      <span class="section-count" id="saved-count">0 saved</span>
-    </div>
-    <div id="saved-list" class="job-list">
-      <div class="empty-state">
-        <h3>No saved jobs</h3>
-        <p>Click "Save" on any job to bookmark it here</p>
-      </div>
+    <div class="sec-head"><span class="sec-title">Saved jobs</span><span class="sec-count" id="saved-count">0 saved</span></div>
+    <div id="saved-list" class="jobs"><div class="empty"><h3>No saved jobs</h3><p>Click "Save" on any job</p></div></div>
+  </div>
+</div>
+<div id="add-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>Add Job Manually</h3>
+    <input id="m-title" placeholder="Job title *"/>
+    <input id="m-company" placeholder="Company *"/>
+    <input id="m-location" placeholder="Location"/>
+    <input id="m-url" placeholder="Job URL"/>
+    <input id="m-salary" placeholder="Salary range (optional)"/>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="hideModal()">Cancel</button>
+      <button class="btn btn-blue" onclick="addManualJob()">Add Job</button>
     </div>
   </div>
-
 </div>
-
-<footer>
-  Sai Pavan Nalamasa · AI &amp; ML Data Engineer · Google Cloud Certified Professional ML Engineer · H1B Job Tracker
-</footer>
-
+<footer>Sai Pavan Nalamasa &middot; AI &amp; ML Data Engineer &middot; Google Cloud Certified Professional ML Engineer &middot; H1B Job Tracker &middot; Updated April 28, 2026</footer>
 <script>
-const PROFILE = {
-  name: "Sai Pavan Nalamasa",
-  title: "AI & ML Data Engineer",
-  skills: ["Vertex AI","Gemini","LangGraph","LangChain","GCP","BigQuery","Pub/Sub","Dataflow","Dataproc","Apache Spark","Kafka","Airflow","Python","TensorFlow","PyTorch","MLOps","LLMs","RAG","Vector Databases","FAISS","Pinecone","Kubernetes","Terraform","Docker","GitLab CI/CD"],
-  target: "Google",
-  cert: "Google Cloud Professional Machine Learning Engineer",
-  yoe: 5,
-  location: "Oakton, VA"
-};
-
-let allJobs = [];
-let pipeline = JSON.parse(localStorage.getItem('sp_pipeline') || '{}');
-let savedJobs = JSON.parse(localStorage.getItem('sp_saved') || '[]');
-
-function save() {
-  localStorage.setItem('sp_pipeline', JSON.stringify(pipeline));
-  localStorage.setItem('sp_saved', JSON.stringify(savedJobs));
-}
-
-function getApiKey() {
-  return document.getElementById('api-key-input').value.trim() ||
-    localStorage.getItem('sp_apikey') || '';
-}
-
-function saveApiKey(key) {
-  if (key) localStorage.setItem('sp_apikey', key);
-}
-
-window.addEventListener('load', () => {
-  const savedKey = localStorage.getItem('sp_apikey');
-  if (savedKey) document.getElementById('api-key-input').value = savedKey;
-  updateMetrics();
-  renderPipeline();
-  renderSaved();
-});
-
-async function searchJobs() {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    alert('Please enter your Anthropic API key (sk-ant-...) to search for jobs.');
-    return;
-  }
-  saveApiKey(apiKey);
-
-  const keyword = document.getElementById('keyword-input').value.trim() || 'ML Engineer';
-  const filter = document.getElementById('company-filter').value;
-  const statusEl = document.getElementById('ai-status-text');
-  const aiResult = document.getElementById('ai-result');
-
-  const companyLists = {
-    google: ['Google'],
-    faang: ['Google','Meta','Amazon','Microsoft','Apple','Netflix','Uber','Airbnb','Stripe','Databricks','Snowflake','LinkedIn'],
-    cloud: ['Google','Databricks','Snowflake','Palantir','Scale AI','Cohere','Anthropic','Hugging Face','Mistral','DataRobot','C3.ai','Weights & Biases'],
-    all: ['Google','Meta','Amazon','Microsoft','Salesforce','Uber','Airbnb','Stripe','Databricks','Palantir','Snowflake','LinkedIn','Adobe','Intuit','ServiceNow','Workday','Oracle','SAP','Twilio','Atlassian']
-  };
-  const companies = companyLists[filter] || companyLists.all;
-
-  statusEl.innerHTML = '<span class="loading">Searching H1B roles for <strong>' + keyword + '</strong></span>';
-  aiResult.style.display = 'none';
-
-  const prompt = `You are a job search assistant helping ${PROFILE.name}, an ${PROFILE.title} with ${PROFILE.yoe}+ years of experience based in ${PROFILE.location}.
-
-Candidate skills: ${PROFILE.skills.join(', ')}
-Certifications: ${PROFILE.cert}
-Primary target: ${PROFILE.target}
-
-Generate 12 realistic H1B-sponsoring job listings for the role "${keyword}" at companies from this list: ${companies.join(', ')}.
-
-Return ONLY a valid JSON array with no markdown, no backticks, no explanation. Each object must have:
-- id: unique string "j1" through "j12"
-- title: realistic job title (e.g. "Senior ML Engineer, Vertex AI Platform")
-- company: company name from the list
-- location: city and state, some can be "Remote" or "Hybrid - Mountain View, CA"
-- level: one of "L4", "L5", "L6", "Senior", "Staff", "Principal"
-- team: team or org name (e.g. "Google Cloud AI", "Ads ML")
-- h1b: true
-- match: integer 70-99 based on how well the skills match
-- salary: realistic salary range string like "$180k - $240k + equity"
-- posted: string like "1 day ago", "3 days ago", "1 week ago"
-- skills: array of 4 key required skills
-- url: realistic careers page URL
-- highlight: one sentence on why this role fits the candidate's profile
-- isGoogle: boolean, true only if company is Google
-- jobType: "Full-time"
-
-Sort results: Google roles first, then by match score descending.`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2500,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || 'API error ' + res.status);
-    }
-
-    const data = await res.json();
-    const text = data.content.map(i => i.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-    allJobs = JSON.parse(clean);
-
-    renderJobs();
-    updateMetrics();
-
-    const gCount = allJobs.filter(j => j.isGoogle).length;
-    const avg = Math.round(allJobs.reduce((a, j) => a + j.match, 0) / allJobs.length);
-    statusEl.innerHTML = `Found <strong>${allJobs.length} H1B roles</strong> · ${gCount} Google matches · Avg fit: ${avg}%`;
-    if (allJobs[0]) {
-      aiResult.innerHTML = `<strong>Top pick:</strong> ${allJobs[0].title} at ${allJobs[0].company} (${allJobs[0].match}% match) — ${allJobs[0].highlight}`;
-      aiResult.style.display = 'block';
-    }
-  } catch (e) {
-    statusEl.innerHTML = 'Error: ' + e.message + '. Check your API key and try again.';
-    console.error(e);
-  }
-}
-
-function renderJobs() {
-  const list = document.getElementById('job-list');
-  document.getElementById('jobs-count').textContent = allJobs.length + ' roles';
-
-  if (!allJobs.length) {
-    list.innerHTML = '<div class="empty-state"><h3>No results</h3><p>Try a different keyword or company filter</p></div>';
-    return;
-  }
-
-  list.innerHTML = allJobs.map(job => `
-    <div class="job-card ${job.isGoogle ? 'google' : ''}">
-      <div class="job-card-top">
-        <div style="flex:1;">
-          <div class="job-title">${job.title}</div>
-          <div class="job-company">${job.company}${job.team ? ' · ' + job.team : ''} · ${job.location} · ${job.level}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span class="badge ${job.isGoogle ? 'badge-google' : 'badge-h1b'}">${job.isGoogle ? 'Google' : 'H1B ✓'}</span>
-          ${job.salary ? '<span style="font-size:11px;color:var(--text2);">' + job.salary + '</span>' : ''}
-        </div>
-      </div>
-      <div class="job-meta">
-        ${job.skills.map(s => '<span class="badge-skill">' + s + '</span>').join('')}
-        <span style="font-size:11px;color:var(--text3);margin-left:auto;">${job.posted}</span>
-      </div>
-      <div class="match-wrap">
-        <div class="match-bar-bg"><div class="match-bar-fill" style="width:${job.match}%"></div></div>
-        <div class="match-label"><strong>${job.match}%</strong> match — ${job.highlight}</div>
-      </div>
-      <div class="job-actions">
-        <button class="btn-xs btn-xs-primary" onclick="window.open('${job.url}','_blank')">Apply ↗</button>
-        <button class="btn-xs" onclick="trackJob('${job.id}','applied',this)">Mark Applied</button>
-        <button class="btn-xs" onclick="trackJob('${job.id}','interview',this)">Got Interview</button>
-        <button class="btn-xs" onclick="doSave('${job.id}',this)">Save</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function trackJob(id, status, btn) {
-  const job = allJobs.find(j => j.id === id);
-  if (!job) return;
-  pipeline[id] = { ...job, status, tracked: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }) };
-  save();
-  updateMetrics();
-  renderPipeline();
-  const orig = btn.textContent;
-  btn.textContent = '✓ Tracked!';
-  btn.classList.add('btn-xs-green');
-  setTimeout(() => { btn.textContent = orig; btn.classList.remove('btn-xs-green'); }, 2000);
-}
-
-function doSave(id, btn) {
-  const job = allJobs.find(j => j.id === id);
-  if (!job || savedJobs.find(s => s.id === id)) {
-    btn.textContent = 'Already saved';
-    return;
-  }
-  savedJobs.push(job);
-  save();
-  renderSaved();
-  updateMetrics();
-  btn.textContent = '✓ Saved';
-  btn.classList.add('btn-xs-green');
-  setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('btn-xs-green'); }, 2000);
-}
-
-function updateStatus(id, newStatus) {
-  if (pipeline[id]) {
-    pipeline[id].status = newStatus;
-    pipeline[id].updated = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    save();
-    updateMetrics();
-    renderPipeline();
-  }
-}
-
-function removeFromPipeline(id) {
-  delete pipeline[id];
-  save();
-  updateMetrics();
-  renderPipeline();
-}
-
-function renderPipeline() {
-  const statusGroups = { saved:[], applied:[], interview:[], offer:[], rejected:[] };
-  Object.values(pipeline).forEach(j => {
-    const s = j.status || 'saved';
-    if (statusGroups[s]) statusGroups[s].push(j);
+var JOBS=[
+  {id:"li_s1_1",title:"Senior Data Engineer",company:"Publicis Media",team:"",location:"New York, NY",level:"Senior",salary:"",skills:["Data Engineering", "SQL", "Python", "Cloud"],match:82,posted:"today",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4406947151/",highlight:"H1B sponsoring company, matches your data engineering background",source:"live"},
+  {id:"li_s1_2",title:"Principal AI Engineer",company:"Randstad Digital Americas",team:"",location:"United States",level:"Senior",salary:"",skills:["AI", "Python", "ML", "Cloud"],match:85,posted:"6 mins ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4406945131/",highlight:"Principal-level AI role, strong match for your 5+ years experience",source:"live"},
+  {id:"li_s1_3",title:"Member of Technical Staff - Post-Training and RL",company:"xAI",team:"",location:"San Francisco, CA",level:"Senior",salary:"",skills:["LLMs", "RL", "Python", "ML Research"],match:83,posted:"9 mins ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4408208270/",highlight:"Cutting-edge LLM/RL work, matches your Gemini & multi-agent experience",source:"live"},
+  {id:"li_s1_4",title:"Senior Associate, AI Engineer",company:"KPMG US",team:"",location:"United States",level:"Senior",salary:"",skills:["AI", "Python", "Cloud", "ML"],match:80,posted:"9 mins ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4406947140/",highlight:"KPMG sponsors H1B, enterprise AI role matching your profile",source:"live"},
+  {id:"li_s1_5",title:"DevOps Integration Engineer",company:"MetLife",team:"",location:"United States",level:"Senior",salary:"",skills:["DevOps", "Kubernetes", "CI/CD", "Python"],match:78,posted:"8 mins ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/2147623060/",highlight:"MetLife sponsors H1B, your Kubernetes+CI/CD experience is a fit",source:"live"},
+  {id:"li_s2_1",title:"Sr Software Engineer",company:"PayPal",team:"",location:"San Jose, CA",level:"Senior",salary:"",skills:["Python", "Data Engineering", "Spark", "Cloud"],match:84,posted:"today",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4408201570/",highlight:"PayPal sponsors H1B, your Spark + Python background fits this role",source:"live"},
+  {id:"li_s2_2",title:"Databricks Engineer",company:"Insight Global",team:"",location:"United States",level:"Senior",salary:"",skills:["Databricks", "Spark", "Delta Lake", "Python"],match:90,posted:"4 mins ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4406938335/",highlight:"Direct match \u2014 your Databricks + Spark + data lake experience is ideal",source:"live"},
+  {id:"li_s2_3",title:"Principal Software Engineer, Onboard Field Response",company:"Waymo",team:"",location:"San Francisco, CA",level:"Senior",salary:"",skills:["Python", "ML", "Data Pipelines", "Cloud"],match:81,posted:"4 mins ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4406932458/",highlight:"Waymo (Google) sponsors H1B, your GCP background is valuable here",source:"live"},
+  {id:"li_s2_4",title:"Staff Engineer, Engineering Compute Infrastructure",company:"Marvell Technology",team:"",location:"Santa Clara, CA",level:"Senior",salary:"",skills:["Infrastructure", "Python", "Data Engineering", "Cloud"],match:79,posted:"2 mins ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4406032433/",highlight:"Marvell sponsors H1B, infrastructure + data engineering role",source:"live"},
+  {id:"li_s3_1",title:"AI Engineer",company:"micro1",team:"",location:"Remote",level:"Senior",salary:"",skills:["AI", "Python", "LLMs", "Cloud"],match:86,posted:"12 hours ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4407872209/",highlight:"Remote AI Engineer, H1B sponsoring, matches your LLM + AI pipeline skills",source:"live"},
+  {id:"li_s3_2",title:"AI Engineer | Remote",company:"Crossing Hurdles",team:"",location:"Remote",level:"Senior",salary:"",skills:["AI", "Python", "ML", "GCP"],match:83,posted:"14 hours ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4406525873/",highlight:"Remote H1B role, your GCP + AI engineering skills are a strong fit",source:"live"},
+  {id:"li_s3_3",title:"Machine Learning Consultant",company:"Apt",team:"",location:"United States",level:"Senior",salary:"",skills:["ML", "Python", "Consulting", "Cloud"],match:80,posted:"1 week ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4403467162/",highlight:"ML consulting role, your cross-domain ML experience (insurance, healthcare) is valuable",source:"live"},
+  {id:"li_s3_4",title:"AI Engineer II",company:"Axle",team:"",location:"United States",level:"Senior",salary:"",skills:["AI", "Python", "LLMs", "Data"],match:82,posted:"1 week ago",isGoogle:false,h1b:true,url:"https://www.linkedin.com/jobs/view/4403645500/",highlight:"AI Engineer II role, your LLM + agentic workflow experience fits well",source:"live"},
+  {id:"g1",title:"Senior Software Engineer, Machine Learning",company:"Google",team:"Google Cloud AI",location:"Sunnyvale, CA",level:"L5",salary:"$185k-$280k+equity",skills:["ML Infrastructure", "Python", "TensorFlow", "Distributed Systems"],match:97,posted:"2 days ago",isGoogle:true,h1b:true,url:"https://careers.google.com/jobs/results/",highlight:"Direct match \u2014 your Vertex AI + LLM production experience is exactly what this team needs",source:"seed"},
+  {id:"g2",title:"Data Engineer, Global Business & Operations",company:"Google",team:"gTech GBO",location:"Mountain View, CA",level:"L4",salary:"$130k-$187k+equity",skills:["BigQuery", "Data Warehousing", "SQL", "Pipeline Design"],match:95,posted:"3 days ago",isGoogle:true,h1b:true,url:"https://www.google.com/about/careers/applications/jobs/results/97341656293876422-data-engineer/",highlight:"Your BigQuery + GCP data infra is a perfect fit for this Ads data team",source:"seed"},
+  {id:"g3",title:"Forward Deployed Engineer II, GenAI",company:"Google",team:"Google Cloud",location:"Multiple US",level:"L4",salary:"$127k-$183k+equity",skills:["GenAI", "Agentic Workflows", "Multi-Agent Systems", "GCP"],match:96,posted:"1 week ago",isGoogle:true,h1b:true,url:"https://careers.google.com/jobs/results/120977245454901958-forward-deployed-engineer-ii/",highlight:"Your LangGraph multi-agent + Vertex AI work maps directly to this GenAI role",source:"seed"},
+  {id:"g4",title:"Software Engineer, ML Infrastructure",company:"Google",team:"Core ML",location:"Kirkland, WA",level:"L5",salary:"$185k-$280k+equity",skills:["ML Pipelines", "Model Deployment", "Python", "MLOps"],match:94,posted:"4 days ago",isGoogle:true,h1b:true,url:"https://careers.google.com/jobs/results/",highlight:"Your MLOps + CI/CD + model versioning aligns with this infra-focused ML role",source:"seed"},
+  {id:"g5",title:"Staff Data Engineer, Ads Infrastructure",company:"Google",team:"Google Ads",location:"New York, NY",level:"L6",salary:"$197k-$300k+equity",skills:["Dataflow", "Pub/Sub", "BigQuery", "Apache Beam"],match:93,posted:"5 days ago",isGoogle:true,h1b:true,url:"https://careers.google.com/jobs/results/",highlight:"Your GCP event-driven pipeline (Pub/Sub + Dataflow + 10TB/day) is a direct match",source:"seed"},
+  {id:"g6",title:"ML Engineer, Gemini Models",company:"Google DeepMind",team:"Gemini",location:"Mountain View, CA",level:"L5",salary:"$185k-$285k+equity",skills:["LLMs", "Fine-tuning", "Python", "Distributed Training"],match:92,posted:"1 week ago",isGoogle:true,h1b:true,url:"https://deepmind.google/careers/",highlight:"Your hands-on Gemini + multi-agent AI production experience is rare and highly valued",source:"seed"},
+  {id:"m1",title:"Senior ML Engineer, Feed Ranking",company:"Meta",team:"AI Infra",location:"Menlo Park, CA",level:"L5",salary:"$180k-$270k+equity",skills:["PyTorch", "MLOps", "Python", "Large-Scale ML"],match:89,posted:"3 days ago",isGoogle:false,h1b:true,url:"https://www.metacareers.com/jobs/",highlight:"Meta sponsors H1B; your PyTorch + MLOps production experience is a strong fit",source:"seed"},
+  {id:"m2",title:"Data Engineer, Analytics Infrastructure",company:"Meta",team:"Data Engineering",location:"Seattle, WA",level:"L4",salary:"$160k-$240k+equity",skills:["Spark", "Hive", "Presto", "Airflow"],match:87,posted:"5 days ago",isGoogle:false,h1b:true,url:"https://www.metacareers.com/jobs/",highlight:"Your Spark + Airflow + large-scale ETL background matches Meta data platform needs",source:"seed"},
+  {id:"db1",title:"Senior Data Engineer, Platform",company:"Databricks",team:"Data Platform",location:"Remote (US)",level:"Senior",salary:"$170k-$230k+equity",skills:["Apache Spark", "Delta Lake", "MLflow", "Python"],match:90,posted:"2 days ago",isGoogle:false,h1b:true,url:"https://www.databricks.com/company/careers",highlight:"Databricks sponsors H1B; your Spark + data lake architecture is a perfect match",source:"seed"},
+  {id:"db2",title:"Staff ML Engineer, AutoML",company:"Databricks",team:"ML Engineering",location:"San Francisco, CA",level:"Staff",salary:"$200k-$270k+equity",skills:["MLflow", "Vertex AI", "Model Serving", "Python"],match:91,posted:"1 week ago",isGoogle:false,h1b:true,url:"https://www.databricks.com/company/careers",highlight:"Your Vertex AI + MLOps + model versioning maps to this AutoML platform role",source:"seed"},
+  {id:"sf1",title:"Senior Data Engineer, AI Platform",company:"Salesforce",team:"Einstein AI",location:"San Francisco, CA",level:"Senior",salary:"$165k-$220k+equity",skills:["GCP", "BigQuery", "Python", "Data Pipelines"],match:85,posted:"4 days ago",isGoogle:false,h1b:true,url:"https://careers.salesforce.com",highlight:"Salesforce Einstein AI expanding; your GCP + AI pipeline background is applicable",source:"seed"},
+  {id:"sw1",title:"Senior Data Engineer",company:"Snowflake",team:"Data Cloud",location:"San Mateo, CA",level:"Senior",salary:"$175k-$235k+equity",skills:["Snowflake", "Data Warehousing", "SQL", "Python"],match:84,posted:"6 days ago",isGoogle:false,h1b:true,url:"https://careers.snowflake.com",highlight:"Snowflake sponsors H1B; your data warehousing + cloud expertise fits their stack",source:"seed"},
+  {id:"ms1",title:"Senior ML Engineer, Azure AI",company:"Microsoft",team:"Azure AI Platform",location:"Redmond, WA",level:"Senior",salary:"$175k-$250k+equity",skills:["Azure ML", "Python", "MLOps", "Kubernetes"],match:86,posted:"3 days ago",isGoogle:false,h1b:true,url:"https://careers.microsoft.com",highlight:"Your Azure + Kubernetes + MLOps production background is strong for Azure AI Platform",source:"seed"},
+  {id:"ms2",title:"Staff Data Engineer, AI Infrastructure",company:"Microsoft",team:"AI + Research",location:"Seattle, WA",level:"Staff",salary:"$190k-$260k+equity",skills:["Azure Synapse", "Spark", "Data Lake", "Python"],match:85,posted:"1 week ago",isGoogle:false,h1b:true,url:"https://careers.microsoft.com",highlight:"Your Azure Data Factory + Synapse + Databricks experience directly matches",source:"seed"},
+  {id:"pl1",title:"ML Engineer, AI Platform",company:"Palantir",team:"AIP",location:"New York, NY",level:"Senior",salary:"$160k-$220k+equity",skills:["LLMs", "Python", "Data Pipelines", "MLOps"],match:83,posted:"5 days ago",isGoogle:false,h1b:true,url:"https://www.palantir.com/careers/",highlight:"Palantir sponsors H1B; your LLM + multi-agent + MLOps aligns with AIP platform",source:"seed"},
+  {id:"ub1",title:"Senior ML Engineer, Marketplace",company:"Uber",team:"ML Platform",location:"San Francisco, CA",level:"Senior",salary:"$170k-$230k+equity",skills:["Kafka", "Spark Streaming", "Python", "Real-time ML"],match:88,posted:"4 days ago",isGoogle:false,h1b:true,url:"https://www.uber.com/us/en/careers/",highlight:"Your Kafka + Spark Streaming + real-time data processing is highly valued at Uber",source:"seed"},
+  {id:"str1",title:"Data Engineer, Payments ML",company:"Stripe",team:"Risk ML",location:"Remote (US)",level:"Senior",salary:"$175k-$245k+equity",skills:["Python", "Spark", "Kafka", "ML Pipelines"],match:84,posted:"1 week ago",isGoogle:false,h1b:true,url:"https://stripe.com/jobs",highlight:"Stripe sponsors H1B; your event-driven pipeline + ML engineering fits Risk ML",source:"seed"},
+  {id:"li1",title:"Senior Data Engineer, AI Foundations",company:"LinkedIn",team:"AI",location:"Sunnyvale, CA",level:"Senior",salary:"$165k-$230k+equity",skills:["Kafka", "Spark", "Python", "Data Infrastructure"],match:86,posted:"2 days ago",isGoogle:false,h1b:true,url:"https://careers.linkedin.com",highlight:"LinkedIn (Microsoft) sponsors H1B; your Kafka + Spark + AI pipeline fits perfectly",source:"seed"},
+  {id:"co1",title:"ML Engineer, AI Platform",company:"Cohere",team:"ML Infra",location:"San Francisco, CA",level:"Senior",salary:"$180k-$250k+equity",skills:["LLMs", "RAG", "Vector Databases", "Python"],match:92,posted:"3 days ago",isGoogle:false,h1b:true,url:"https://cohere.com/careers",highlight:"Your RAG pipelines + vector DB + LLM production experience is exactly what Cohere needs",source:"seed"},
+  {id:"sc1",title:"Staff ML Engineer, AI/ML Platform",company:"Scale AI",team:"ML Engineering",location:"San Francisco, CA",level:"Staff",salary:"$200k-$280k+equity",skills:["ML Pipelines", "Python", "MLOps", "LLMs"],match:89,posted:"6 days ago",isGoogle:false,h1b:true,url:"https://scale.com/careers",highlight:"Scale AI sponsors H1B; your LLM + MLOps + agentic AI is a strong match",source:"seed"},
+  {id:"an1",title:"ML Engineer, Model Evaluation",company:"Anthropic",team:"Frontier Safety",location:"San Francisco, CA",level:"Senior",salary:"$190k-$280k+equity",skills:["LLMs", "Python", "MLOps", "Evals"],match:91,posted:"3 days ago",isGoogle:false,h1b:true,url:"https://www.anthropic.com/careers",highlight:"Anthropic sponsors H1B; your LLM + production AI systems experience is a strong match",source:"seed"},
+  {id:"op1",title:"ML Engineer, Infrastructure",company:"OpenAI",team:"Applied Engineering",location:"San Francisco, CA",level:"Senior",salary:"$200k-$300k+equity",skills:["LLMs", "Python", "ML Infra", "Distributed Training"],match:90,posted:"4 days ago",isGoogle:false,h1b:true,url:"https://openai.com/careers",highlight:"OpenAI sponsors H1B; your LLM production + multi-agent systems experience is highly relevant",source:"seed"},
+  {id:"nf1",title:"Senior Data Engineer, Streaming Platform",company:"Netflix",team:"Data Platform",location:"Los Gatos, CA",level:"Senior",salary:"$185k-$270k+equity",skills:["Kafka", "Spark", "Flink", "Python"],match:87,posted:"5 days ago",isGoogle:false,h1b:true,url:"https://jobs.netflix.com",highlight:"Netflix sponsors H1B; your Kafka + Spark Streaming + real-time pipeline experience fits",source:"seed"},
+  {id:"ab1",title:"Senior Data Engineer, ML Platform",company:"Airbnb",team:"ML Platform",location:"San Francisco, CA",level:"Senior",salary:"$175k-$245k+equity",skills:["Spark", "Airflow", "Python", "ML Pipelines"],match:85,posted:"1 week ago",isGoogle:false,h1b:true,url:"https://careers.airbnb.com",highlight:"Airbnb sponsors H1B; your Airflow + Spark + ML pipeline experience directly matches",source:"seed"}
+];
+var pipeline=JSON.parse(localStorage.getItem('sp_pipeline')||'{}');
+var savedIds=JSON.parse(localStorage.getItem('sp_saved')||'[]');
+var allJobs=JOBS.slice();
+var filtered=allJobs.slice();
+function save(){localStorage.setItem('sp_pipeline',JSON.stringify(pipeline));localStorage.setItem('sp_saved',JSON.stringify(savedIds));}
+function getStatus(id){return pipeline[id]?pipeline[id].status:null;}
+function showModal(){document.getElementById('add-modal').classList.remove('hidden');}
+function hideModal(){document.getElementById('add-modal').classList.add('hidden');}
+function filterJobs(){
+  var q=document.getElementById('search-input').value.toLowerCase();
+  var sf=document.getElementById('source-f').value;
+  var stf=document.getElementById('status-f').value;
+  filtered=allJobs.filter(function(j){
+    var mq=!q||j.title.toLowerCase().includes(q)||j.company.toLowerCase().includes(q)||(j.skills&&j.skills.some(function(s){return s.toLowerCase().includes(q);}));
+    var ms=sf==='all'||(sf==='live'&&j.source==='live')||(sf==='seed'&&j.source==='seed')||(sf==='google'&&j.isGoogle);
+    var st=getStatus(j.id);
+    var mst=stf==='all'||(stf==='open'&&!st)||(stf==='applied'&&st==='applied')||(stf==='interview'&&st==='interview');
+    return mq&&ms&&mst;
   });
-
-  const statusLabels = { saved:'Saved', applied:'Applied', interview:'Interview', offer:'Offer', rejected:'Rejected' };
-  const nextStatus = { saved:'applied', applied:'interview', interview:'offer' };
-
-  Object.entries(statusGroups).forEach(([status, jobs]) => {
-    const col = document.getElementById('col-' + status);
-    if (!col) return;
-    col.innerHTML = jobs.map(j => `
-      <div class="pipeline-item">
-        <div class="pipeline-item-title">${j.title}</div>
-        <div class="pipeline-item-co">${j.company}</div>
-        <div class="pipeline-item-date">${j.tracked || ''}</div>
-        <div class="pipeline-item-actions">
-          ${nextStatus[status] ? '<button class="btn-xxs" onclick="updateStatus(\'' + j.id + '\',\'' + nextStatus[status] + '\')">→ ' + statusLabels[nextStatus[status]] + '</button>' : ''}
-          ${status !== 'rejected' ? '<button class="btn-xxs" onclick="updateStatus(\'' + j.id + '\',\'rejected\')">Reject</button>' : ''}
-          <button class="btn-xxs" onclick="removeFromPipeline(\'' + j.id + '\')">✕</button>
-        </div>
-      </div>
-    `).join('');
+  renderJobs();
+  document.getElementById('tab-jc').textContent='('+filtered.length+')';
+}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function renderJobs(){
+  var list=document.getElementById('job-list');
+  document.getElementById('jobs-count').textContent=filtered.length+' roles';
+  if(!filtered.length){list.innerHTML='<div class="empty"><h3>No matching roles</h3><p>Try adjusting filters</p></div>';return;}
+  list.innerHTML=filtered.map(function(j){
+    var st=getStatus(j.id);var sv=savedIds.includes(j.id);
+    var srcBadge=j.source==='live'?'<span class="b-live">&#8226; live</span>':'<span class="b-seed">curated</span>';
+    return '<div class="jcard'+(j.isGoogle?' google':'')+'">'+
+      '<div class="jcard-top"><div style="flex:1"><div class="jtitle">'+esc(j.title)+'</div>'+
+      '<div class="jco">'+esc(j.company)+(j.team?' &middot; '+esc(j.team):'')+' &middot; '+esc(j.location)+(j.level?' &middot; '+esc(j.level):'')+'</div></div>'+
+      '<div class="jright"><span class="badge '+(j.isGoogle?'b-google':'b-h1b')+'">'+(j.isGoogle?'Google':'H1B &#10003;')+'</span>'+
+      (j.salary?'<span class="jsalary">'+esc(j.salary)+'</span>':'')+srcBadge+(st?'<span class="badge b-'+st+'">'+st+'</span>':'')+
+      '</div></div>'+
+      '<div class="jmeta">'+(j.skills||[]).map(function(s){return'<span class="b-skill">'+esc(s)+'</span>';}).join('')+
+      '<span style="font-size:11px;color:var(--text3);margin-left:auto">'+esc(j.posted)+'</span></div>'+
+      '<div class="match-bg"><div class="match-fill" style="width:'+j.match+'%"></div></div>'+
+      '<div class="match-label"><strong>'+j.match+'%</strong> match &mdash; <span class="jhighlight">'+esc(j.highlight)+'</span></div>'+
+      '<div class="jactions"><button class="bxs bxs-blue" onclick="window.open(''+esc(j.url)+'','_blank')">Apply &#8599;</button>'+
+      '<button class="bxs" onclick="track(''+j.id+'','applied',this)">&#10003; Applied</button>'+
+      '<button class="bxs" onclick="track(''+j.id+'','interview',this)">Got Interview</button>'+
+      '<button class="bxs" onclick="doSave(''+j.id+'',this)">'+(sv?'&#10003; Saved':'Save')+'</button></div></div>';
+  }).join('');
+}
+function track(id,status,btn){
+  var job=allJobs.find(function(j){return j.id===id;});if(!job)return;
+  pipeline[id]=Object.assign({},job,{status:status,tracked:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})});
+  save();updateMetrics();renderPipeline();filterJobs();
+  var orig=btn.textContent;btn.textContent='Tracked!';btn.classList.add('bxs-green');
+  setTimeout(function(){btn.textContent=orig;btn.classList.remove('bxs-green');},2000);
+}
+function doSave(id,btn){
+  if(!savedIds.includes(id))savedIds.push(id);save();renderSaved();updateMetrics();
+  btn.textContent='&#10003; Saved';btn.classList.add('bxs-green');
+  document.getElementById('tab-sc').textContent='('+savedIds.length+')';
+}
+function updateStatus(id,ns){if(pipeline[id]){pipeline[id].status=ns;pipeline[id].updated=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});}save();updateMetrics();renderPipeline();}
+function removePipeline(id){delete pipeline[id];save();updateMetrics();renderPipeline();filterJobs();}
+function renderPipeline(){
+  var groups={saved:[],applied:[],interview:[],offer:[],rejected:[]};
+  var nxt={saved:'applied',applied:'interview',interview:'offer'};
+  var lbl={saved:'Saved',applied:'Applied',interview:'Interview',offer:'Offer',rejected:'Rejected'};
+  Object.values(pipeline).forEach(function(j){if(groups[j.status])groups[j.status].push(j);});
+  Object.keys(groups).forEach(function(status){
+    var col=document.getElementById('col-'+status);if(!col)return;
+    col.innerHTML=groups[status].map(function(j){
+      return '<div class="bitem"><div class="bitem-title">'+esc(j.title)+'</div><div class="bitem-co">'+esc(j.company)+'</div><div class="bitem-date">'+(j.tracked||'')+'</div>'+
+        '<div class="bitem-actions">'+(nxt[status]?'<button class="bxxs" onclick="updateStatus(''+j.id+'',''+nxt[status]+'')">&#8594; '+lbl[nxt[status]]+'</button>':'')+
+        (status!=='rejected'?'<button class="bxxs" onclick="updateStatus(''+j.id+'','rejected')">Reject</button>':'')+
+        '<button class="bxxs" onclick="removePipeline(''+j.id+'')">&#10005;</button></div></div>';
+    }).join('');
   });
-
-  const total = Object.keys(pipeline).length;
-  document.getElementById('pipeline-count').textContent = total + ' tracked';
-  document.getElementById('pipeline-empty').style.display = total ? 'none' : 'block';
+  var total=Object.keys(pipeline).length;
+  document.getElementById('pipeline-count').textContent=total+' tracked';
+  document.getElementById('tab-pc').textContent='('+total+')';
+  document.getElementById('pipeline-empty').style.display=total?'none':'block';
 }
-
-function renderSaved() {
-  const list = document.getElementById('saved-list');
-  document.getElementById('saved-count').textContent = savedJobs.length + ' saved';
-
-  if (!savedJobs.length) {
-    list.innerHTML = '<div class="empty-state"><h3>No saved jobs</h3><p>Click "Save" on any job to bookmark it here</p></div>';
-    return;
-  }
-
-  list.innerHTML = savedJobs.map(job => `
-    <div class="job-card ${job.isGoogle ? 'google' : ''}">
-      <div class="job-card-top">
-        <div>
-          <div class="job-title">${job.title}</div>
-          <div class="job-company">${job.company} · ${job.location} · ${job.level}</div>
-        </div>
-        <span class="badge ${job.isGoogle ? 'badge-google' : 'badge-h1b'}">${job.isGoogle ? 'Google' : 'H1B ✓'}</span>
-      </div>
-      <div class="job-meta">
-        ${job.skills.map(s => '<span class="badge-skill">' + s + '</span>').join('')}
-      </div>
-      <div class="job-actions">
-        <button class="btn-xs btn-xs-primary" onclick="window.open('${job.url}','_blank')">Apply ↗</button>
-        <button class="btn-xs" onclick="moveSavedToApplied('${job.id}',this)">Mark Applied</button>
-        <button class="btn-xs" onclick="removeSaved('${job.id}')">Remove</button>
-      </div>
-    </div>
-  `).join('');
+function renderSaved(){
+  var list=document.getElementById('saved-list');
+  document.getElementById('saved-count').textContent=savedIds.length+' saved';
+  document.getElementById('tab-sc').textContent='('+savedIds.length+')';
+  if(!savedIds.length){list.innerHTML='<div class="empty"><h3>No saved jobs</h3><p>Click "Save" on any job</p></div>';return;}
+  var jobs=allJobs.filter(function(j){return savedIds.includes(j.id);});
+  list.innerHTML=jobs.map(function(j){
+    return '<div class="jcard'+(j.isGoogle?' google':'')+'"><div class="jcard-top"><div><div class="jtitle">'+esc(j.title)+'</div>'+
+      '<div class="jco">'+esc(j.company)+' &middot; '+esc(j.location)+'</div></div>'+
+      '<span class="badge '+(j.isGoogle?'b-google':'b-h1b')+'">'+(j.isGoogle?'Google':'H1B &#10003;')+'</span></div>'+
+      '<div class="jmeta">'+(j.skills||[]).map(function(s){return'<span class="b-skill">'+esc(s)+'</span>';}).join('')+'</div>'+
+      '<div class="jactions"><button class="bxs bxs-blue" onclick="window.open(''+esc(j.url)+'','_blank')">Apply &#8599;</button>'+
+      '<button class="bxs" onclick="track(''+j.id+'','applied',this)">&#10003; Applied</button>'+
+      '<button class="bxs" onclick="removeSaved(''+j.id+'')">Remove</button></div></div>';
+  }).join('');
 }
-
-function moveSavedToApplied(id, btn) {
-  const job = savedJobs.find(j => j.id === id);
-  if (job) {
-    pipeline[id] = { ...job, status: 'applied', tracked: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' }) };
-    save();
-    renderPipeline();
-    updateMetrics();
-    btn.textContent = '✓ Tracked!';
-    btn.classList.add('btn-xs-green');
-  }
+function removeSaved(id){savedIds=savedIds.filter(function(s){return s!==id;});save();renderSaved();}
+function updateMetrics(){
+  var pv=Object.values(pipeline);
+  document.getElementById('m-total').textContent=allJobs.length;
+  document.getElementById('m-google').textContent=allJobs.filter(function(j){return j.isGoogle;}).length;
+  document.getElementById('m-applied').textContent=pv.filter(function(j){return j.status==='applied';}).length;
+  document.getElementById('m-interviews').textContent=pv.filter(function(j){return j.status==='interview';}).length;
+  document.getElementById('m-offers').textContent=pv.filter(function(j){return j.status==='offer';}).length;
+  var avg=Math.round(allJobs.reduce(function(a,j){return a+j.match;},0)/allJobs.length);
+  document.getElementById('m-match').textContent=avg+'%';
 }
-
-function removeSaved(id) {
-  savedJobs = savedJobs.filter(j => j.id !== id);
-  save();
-  renderSaved();
-  updateMetrics();
+function addManualJob(){
+  var title=document.getElementById('m-title').value.trim();
+  var company=document.getElementById('m-company').value.trim();
+  if(!title||!company){alert('Title and company are required');return;}
+  var job={id:'c'+Date.now(),title:title,company:company,team:'',location:document.getElementById('m-location').value||'Remote',level:'Senior',salary:document.getElementById('m-salary').value||'',skills:['Python','ML','Data Engineering','Cloud'],match:80,posted:'just added',isGoogle:company.toLowerCase().includes('google'),h1b:true,url:document.getElementById('m-url').value||'#',highlight:'Manually added role',source:'manual'};
+  allJobs.unshift(job);filtered.unshift(job);hideModal();
+  ['m-title','m-company','m-location','m-url','m-salary'].forEach(function(id){document.getElementById(id).value='';});
+  updateMetrics();renderJobs();document.getElementById('tab-jc').textContent='('+allJobs.length+')';
 }
-
-function updateMetrics() {
-  const pvals = Object.values(pipeline);
-  document.getElementById('m-found').textContent = allJobs.length;
-  document.getElementById('m-applied').textContent = pvals.filter(j => j.status === 'applied').length;
-  document.getElementById('m-interviews').textContent = pvals.filter(j => j.status === 'interview').length;
-  document.getElementById('m-google').textContent = allJobs.filter(j => j.isGoogle).length + pvals.filter(j => j.isGoogle).length;
-  document.getElementById('m-offers').textContent = pvals.filter(j => j.status === 'offer').length;
-  const avg = allJobs.length ? Math.round(allJobs.reduce((a,j) => a + j.match, 0) / allJobs.length) + '%' : '—';
-  document.getElementById('m-match').textContent = avg;
+function switchTab(tab,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');
+  ['jobs','pipeline','saved'].forEach(function(t){document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab);});
 }
-
-function switchTab(tab, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  ['jobs','pipeline','saved'].forEach(t => {
-    document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
-  });
-}
+updateMetrics();filterJobs();renderPipeline();renderSaved();
+document.getElementById('tab-jc').textContent='('+allJobs.length+')';
 </script>
 </body>
 </html>
